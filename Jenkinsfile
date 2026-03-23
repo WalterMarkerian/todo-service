@@ -34,17 +34,13 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // 1. Limpieza de contenedores previos
                 sh "docker stop ${CONTAINER_NAME} || true && docker rm ${CONTAINER_NAME} || true"
-
-                // 2. Ejecución con inyección de variables de entorno
-                // El puerto 8090 mapea al 8080 interno de Spring
                 sh """
                     docker run -d \
                     --name ${CONTAINER_NAME} \
                     -p 8090:8080 \
                     --network ${DOCKER_NETWORK} \
-                    -e SPRING_DATASOURCE_URL=${DB_URL} \
+                    -e SPRING_PROFILES_ACTIVE=prod \
                     -e SPRING_DATASOURCE_USERNAME=${DB_USER} \
                     -e SPRING_DATASOURCE_PASSWORD=${DB_PASS} \
                     ${DOCKER_IMAGE}:latest

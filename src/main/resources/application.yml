@@ -1,12 +1,10 @@
+# ==========================================
+# CONFIGURACIÓN COMÚN (Para todos los entornos)
+# ==========================================
 server:
   port: 8090
 
 spring:
-  datasource:
-    # URL de tu servidor Ubuntu
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/tododb}
-    username: ${SPRING_DATASOURCE_USERNAME:postgres}
-    password: ${SPRING_DATASOURCE_PASSWORD:admin}
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,15 +12,46 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
       resourceserver:
         jwt:
-          # Aquí pondrás la URL de tu proveedor de identidad (Auth0/Keycloak)
           issuer-uri: https://tu-dominio.auth0.com/
-  springdoc:
-    swagger-ui:
-      path: /swagger-ui.html    # La URL para acceder desde el navegador
-      operations-sorter: method # Ordena los endpoints por método (GET, POST, etc.)
-    api-docs:
-      path: /api-docs           # Donde se genera el JSON de la especificación
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /api-docs
+
+---
+# ==========================================
+# PERFIL: DEV (Tu PC en Windows)
+# ==========================================
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://192.168.1.23:5432/tododb
+    username: user_admin
+    password: password_secure
+    driver-class-name: org.postgresql.Driver
+
+---
+# ==========================================
+# PERFIL: PROD (Jenkins / Docker en Ubuntu)
+# ==========================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    # IMPORTANTE: En Docker usamos el nombre del contenedor de la DB
+    url: jdbc:postgresql://postgres-db:5432/tododb
+    # En Prod usamos las variables que definimos en el Jenkinsfile
+    username: ${DB_USER}
+    password: ${DB_PASS}
+    driver-class-name: org.postgresql.Driver
