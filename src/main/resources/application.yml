@@ -1,0 +1,28 @@
+server:
+  port: 8090
+
+spring:
+  datasource:
+    # URL de tu servidor Ubuntu
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/tododb}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Aquí pondrás la URL de tu proveedor de identidad (Auth0/Keycloak)
+          issuer-uri: https://tu-dominio.auth0.com/
+  springdoc:
+    swagger-ui:
+      path: /swagger-ui.html    # La URL para acceder desde el navegador
+      operations-sorter: method # Ordena los endpoints por método (GET, POST, etc.)
+    api-docs:
+      path: /api-docs           # Donde se genera el JSON de la especificación
