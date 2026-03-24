@@ -34,15 +34,17 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh "docker stop ${CONTAINER_NAME} || true && docker rm ${CONTAINER_NAME} || true"
+                // Detenemos contenedores previos para evitar conflictos de puerto
+                sh "docker stop todo-api-app || true && docker rm todo-api-app || true"
+
                 sh """
                     docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 8090:8080 \
-                    --network ${DOCKER_NETWORK} \
+                    --name todo-api-app \
+                    -p 8090:8090 \
+                    --network todo-network \
                     -e SPRING_PROFILES_ACTIVE=prod \
-                    -e SPRING_DATASOURCE_USERNAME=${DB_USER} \
-                    -e SPRING_DATASOURCE_PASSWORD=${DB_PASS} \
+                    -e DB_USER=user_admin \
+                    -e DB_PASS=password_secure \
                     ${DOCKER_IMAGE}:latest
                 """
             }
