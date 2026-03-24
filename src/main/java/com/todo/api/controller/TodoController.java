@@ -17,23 +17,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/todos")
+@RequestMapping("/api/v1/todos") // COINCIDE CON EL FRONT
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") // PERMITE QUE REACT SE CONECTE
 @Tag(name = "Tareas", description = "Operaciones para la gestión de la lista de tareas")
 public class TodoController {
 
     private final TodoService todoService;
 
-    @Operation(summary = "Obtener lista paginada", description = "Retorna una página de tareas con soporte para filtros de ordenamiento.")
+    @Operation(summary = "Obtener lista paginada")
     @GetMapping
     public ResponseEntity<Page<TodoDto>> getAll(
             @ParameterObject @PageableDefault(size = 10, sort = "id") Pageable pageable) {
         return ResponseEntity.ok(todoService.listarTodosPaginado(pageable));
     }
 
-    @Operation(summary = "Crear nueva tarea", description = "Registra una tarea en la base de datos y retorna el objeto creado.")
+    @Operation(summary = "Crear nueva tarea")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "21", description = "Tarea creada exitosamente"),
+            @ApiResponse(responseCode = "201", description = "Tarea creada exitosamente"),
             @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
     })
     @PostMapping
