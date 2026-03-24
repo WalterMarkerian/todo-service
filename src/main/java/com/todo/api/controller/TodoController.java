@@ -40,4 +40,10 @@ public class TodoController {
     public ResponseEntity<TodoDto> create(@Valid @RequestBody TodoDto dto) {
         return new ResponseEntity<>(todoService.guardar(dto), HttpStatus.CREATED);
     }
+
+    @Operation(summary = "Marcar como completada/pendiente")
+    @PatchMapping("/{id}/toggle")
+    public ResponseEntity<TodoDto> toggleStatus(@PathVariable Long id) {
+        return ResponseEntity.ok(todoService.toggleEstado(id));
+    }
 }

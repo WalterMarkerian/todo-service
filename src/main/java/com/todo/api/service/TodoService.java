@@ -4,6 +4,7 @@ import com.todo.api.model.dto.TodoDto;
 import com.todo.api.model.entity.Todo;
 import com.todo.api.mapper.TodoMapper;
 import com.todo.api.repository.TodoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,5 +32,16 @@ public class TodoService {
         Todo entity = todoMapper.toEntity(dto);
         Todo saved = todoRepository.save(entity);
         return todoMapper.toDto(saved);
+    }
+
+    @Transactional
+    public TodoDto toggleEstado(Long id) {
+        Todo todo = todoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tarea no encontrada con ID: " + id));
+
+        todo.setCompleted(!todo.isCompleted());
+
+        Todo actualizado = todoRepository.save(todo);
+        return todoMapper.toDto(actualizado);
     }
 }

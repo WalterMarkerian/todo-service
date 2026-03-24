@@ -17,6 +17,6 @@ public record TodoDto(
         String description,
 
         @Schema(description = "Estado de la tarea", example = "false")
-        @JsonProperty("completed") // <--- BLINDAJE: Asegura que el JSON "completed" entre acá
+        @JsonProperty("completed")
         Boolean completed
 ) {}
