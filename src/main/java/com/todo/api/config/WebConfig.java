@@ -10,10 +10,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Permitir todas las rutas de la API
-                .allowedOrigins("http://localhost:5173/") // El origen de tu React
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Incluimos OPTIONS
-                .allowedHeaders("*") // Permitir todos los headers (Content-Type, Authorization, etc.)
+        registry.addMapping("/api/v1/**")
+                .allowedOrigins("http://localhost:5173") // Tu puerto de Vite/React
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
                 .allowCredentials(true);
     }
 }
