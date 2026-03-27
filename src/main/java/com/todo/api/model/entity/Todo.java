@@ -1,19 +1,27 @@
 package com.todo.api.model.entity;
 
+import com.todo.api.model.enums.TodoStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "todos")
-@Getter @Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Todo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String title;
     private String description;
-    private boolean completed;
+
+    @Enumerated(EnumType.STRING)
+    private TodoStatus status; // <--- Nuevo campo
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

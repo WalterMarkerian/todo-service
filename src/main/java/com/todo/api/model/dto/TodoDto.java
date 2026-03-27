@@ -1,6 +1,7 @@
 package com.todo.api.model.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.todo.api.model.enums.TodoStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
@@ -13,10 +14,13 @@ public record TodoDto(
         @Schema(description = "Resumen de la tarea a realizar", example = "Comprar café")
         String title,
 
-        @Schema(description = "Detalle extendido de la tarea", example = "Ir al tostadero artesanal de la esquina")
+        @Schema(description = "Detalle extendido de la tarea", example = "Ir al tostadero artesanal")
         String description,
 
-        @Schema(description = "Estado de la tarea", example = "false")
+        @Schema(description = "Estado actual de la tarea", example = "PENDIENTE")
+        TodoStatus status,
+
+        @Schema(description = "Mantenemos por compatibilidad", example = "false")
         @JsonProperty("completed")
         Boolean completed
 ) {}

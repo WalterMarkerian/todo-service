@@ -7,23 +7,28 @@ server:
 spring:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://tu-dominio.auth0.com/
 
+  # ELIMINADO: spring.security.oauth2 (Usamos JwtService manual)
+
+# Configuración específica para SpringDoc (Swagger)
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-  api-docs:
-    path: /api-docs
+    operations-sorter: alpha
+    tags-sorter: alpha
+  writer-with-default-pretty-printer: true
+
+jackson:
+  serialization:
+    write-dates-as-timestamps: false
 
 ---
 # ==========================================
@@ -48,10 +53,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    # IMPORTANTE: Aquí usamos el hostname definido en el compose
     url: jdbc:postgresql://postgres-db:5432/tododb
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
-
-
