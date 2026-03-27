@@ -58,14 +58,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Ponemos las URLs EXACTAS sin asteriscos al final para no confundir a Spring
-        config.setAllowedOrigins(Arrays.asList(
-                "https://makeserver.tailc624bd.ts.net",
-                "https://makeserver.tailc624bd.ts.net:8443", // Agregamos el puerto explícito
-                "http://localhost:3000",
-                "http://localhost:5173"
-        ));
-
+        // USAMOS "*" PARA TODO (Solo para destrabar el túnel de Tailscale)
+        config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setExposedHeaders(Arrays.asList("Authorization"));
@@ -76,7 +70,15 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
+    @Bean
+    public org.springframework.web.filter.CommonsRequestLoggingFilter logFilter() {
+        org.springframework.web.filter.CommonsRequestLoggingFilter filter = new org.springframework.web.filter.CommonsRequestLoggingFilter();
+        filter.setIncludeQueryString(true);
+        filter.setIncludePayload(true);
+        filter.setMaxPayloadLength(10000);
+        filter.setIncludeHeaders(true);
+        return filter;
+    }
     @Bean
     public ForwardedHeaderFilter forwardedHeaderFilter() {
         return new ForwardedHeaderFilter();
