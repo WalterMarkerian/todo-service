@@ -30,11 +30,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 1. CORS debe ser lo primero
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // 2. Desactivar CSRF para APIs stateless
                 .csrf(AbstractHttpConfigurer::disable)
-                // Agregamos el manejo de excepciones para ver más claro si algo falla
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // 3. Permitir TODOS los OPTIONS sin excepción (Preflight)
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // 4. Tus endpoints públicos
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/auth/**",
@@ -42,8 +46,6 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        // El preflight de CORS debe ser libre
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher(org.springframework.http.HttpMethod.OPTIONS, "/**")).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authProvider)
@@ -56,16 +58,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Cambiamos setAllowedOrigins por setAllowedOriginPatterns para soportar los asteriscos
-        config.setAllowedOriginPatterns(Arrays.asList(
-                "https://makeserver.tailc624bd.ts.net*",
-                "http://makeserver.tailc624bd.ts.net*",
-                "http://localhost*",
-                "http://127.0.0.1*",
-                "http://192.168.1.23*"
+        // Ponemos las URLs EXACTAS sin asteriscos al final para no confundir a Spring
+        config.setAllowedOrigins(Arrays.asList(
+                "https://makeserver.tailc624bd.ts.net",
+                "https://makeserver.tailc624bd.ts.net:8443", // Agregamos el puerto explícito
+                "http://localhost:3000",
+                "http://localhost:5173"
         ));
 
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(Arrays.asList("*"));
         config.setExposedHeaders(Arrays.asList("Authorization"));
         config.setAllowCredentials(true);
