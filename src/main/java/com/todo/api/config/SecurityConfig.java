@@ -57,14 +57,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        // USAMOS "*" PARA TODO (Solo para destrabar el túnel de Tailscale)
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setExposedHeaders(Arrays.asList("Authorization"));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true); // Mantenelo en true si usás cookies/auth
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -79,8 +75,8 @@ public class SecurityConfig {
         filter.setIncludeHeaders(true);
         return filter;
     }
-    @Bean
-    public ForwardedHeaderFilter forwardedHeaderFilter() {
-        return new ForwardedHeaderFilter();
-    }
+//    @Bean
+//    public ForwardedHeaderFilter forwardedHeaderFilter() {
+//        return new ForwardedHeaderFilter();
+//    }
 }
