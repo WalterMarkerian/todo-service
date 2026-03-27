@@ -62,7 +62,10 @@ public class SecurityConfig {
                 "http://makeserver.tailc624bd.ts.net",
                 "http://192.168.1.23:3000",
                 "http://localhost:3000",
-                "http://localhost:5173"
+                "http://localhost:5173",
+                "https://makeserver.tailc624bd.ts.net*",
+                "http://localhost*",
+                "http://127.0.0.1*"
         ));
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
