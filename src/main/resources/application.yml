@@ -18,9 +18,6 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-    mvc:
-      cors:
-        allowed-origins: "https://makeserver.tailc624bd.ts.net"
 
   # ELIMINADO: spring.security.oauth2 (Usamos JwtService manual)
 

@@ -56,23 +56,17 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // 1. IMPORTANTE: Agregamos el origen con puerto 443 (que es el default de HTTPS en Tailscale)
-        config.setAllowedOrigins(Arrays.asList(
-                "https://makeserver.tailc624bd.ts.net",
-                "http://makeserver.tailc624bd.ts.net",
-                "http://192.168.1.23:3000",
-                "http://localhost:3000",
-                "http://localhost:5173",
+        // Cambiamos setAllowedOrigins por setAllowedOriginPatterns para soportar los asteriscos
+        config.setAllowedOriginPatterns(Arrays.asList(
                 "https://makeserver.tailc624bd.ts.net*",
+                "http://makeserver.tailc624bd.ts.net*",
                 "http://localhost*",
-                "http://127.0.0.1*"
+                "http://127.0.0.1*",
+                "http://192.168.1.23*"
         ));
 
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // 2. CAMBIO CRÍTICO: Permitimos todos los headers para evitar bloqueos del navegador
         config.setAllowedHeaders(Arrays.asList("*"));
-
         config.setExposedHeaders(Arrays.asList("Authorization"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
