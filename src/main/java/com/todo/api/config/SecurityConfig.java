@@ -52,7 +52,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         // Mantenemos tus IPs de red local para que el frontend no falle
-        config.setAllowedOrigins(List.of("http://192.168.1.23:3000", "http://localhost:3000","http://localhost:5173"));
+        config.setAllowedOrigins(List.of("http://192.168.1.23:3000", "http://localhost:3000","http://localhost:5173","https://makeserver.tailc624bd.ts.net"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept")); // Agregado Accept
         config.setAllowCredentials(true);
