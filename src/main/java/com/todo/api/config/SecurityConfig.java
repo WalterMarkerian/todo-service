@@ -59,6 +59,7 @@ public class SecurityConfig {
         // Agregamos la URL de Tailscale (asegurarse que no tenga / al final)
         config.setAllowedOrigins(Arrays.asList(
                 "https://makeserver.tailc624bd.ts.net",
+                "http://makeserver.tailc624bd.ts.net",
                 "http://192.168.1.23:3000",
                 "http://localhost:3000",
                 "http://localhost:5173"
