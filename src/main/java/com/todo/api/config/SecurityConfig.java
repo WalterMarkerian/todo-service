@@ -29,17 +29,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 1. IMPORTANTE: El cors() debe ir antes que nada
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Agregamos /swagger-ui.html y el wildcard para que no bloquee los recursos estáticos
                         .requestMatchers(
                                 "/api/v1/auth/**",
+                                "/auth/**",        // <-- Agregado por si el endpoint es /auth/login
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        // Permitir explícitamente los preflights (OPTIONS) para todo
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authProvider)
@@ -51,11 +54,26 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Mantenemos tus IPs de red local para que el frontend no falle
-        config.setAllowedOrigins(List.of("http://192.168.1.23:3000", "http://localhost:3000","http://localhost:5173","https://makeserver.tailc624bd.ts.net"));
+
+        // Agregamos la URL de Tailscale (asegurarse que no tenga / al final)
+        config.setAllowedOrigins(Arrays.asList(
+                "http://192.168.1.23:3000",
+                "http://localhost:3000",
+                "http://localhost:5173",
+                "https://makeserver.tailc624bd.ts.net"
+        ));
+
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept")); // Agregado Accept
+
+        // Usamos "*" para los headers para evitar que falte alguno (como X-Requested-With o Origin)
+        config.setAllowedHeaders(Arrays.asList("*"));
+
+        // Exponemos el header de Authorization por si el front necesita leer el token del header
+        config.setExposedHeaders(Arrays.asList("Authorization"));
+
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // Cacheamos la respuesta del preflight por 1 hora
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
