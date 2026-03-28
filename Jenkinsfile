@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Nombre de la imagen y contenedor
         DOCKER_IMAGE = "todo-api-local"
-        CONTAINER_NAME = "todo-api-app"
+        CONTAINER_NAME = "todo-backend"
 
         // Red de Docker donde corre tu Postgres
         DOCKER_NETWORK = "todo-network"

@@ -24,7 +24,6 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final HandlerExceptionResolver resolver;
 
-    // CONSTRUCTOR MANUAL: Elimina @RequiredArgsConstructor de la clase
     public JwtFilter(
             JwtService jwtService,
             UserDetailsService userDetailsService,
@@ -42,12 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Si es una petición de control de CORS, la dejamos pasar sin validar JWT
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            response.setStatus(HttpServletResponse.SC_OK);
-            return;
-        }
-
+        // 1. Omitir validación en rutas de autenticación pública
         if (request.getServletPath().contains("/api/v1/auth")) {
             filterChain.doFilter(request, response);
             return;
@@ -57,6 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
+        // 2. Validar presencia de Bearer Token
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -66,6 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
             jwt = authHeader.substring(7);
             userEmail = jwtService.extractUsername(jwt);
 
+            // 3. Si hay usuario y no está ya autenticado en el contexto
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
@@ -76,12 +72,15 @@ public class JwtFilter extends OncePerRequestFilter {
                             userDetails.getAuthorities()
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                    // Seteamos la autenticación en el contexto de Spring Security
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
             filterChain.doFilter(request, response);
+
         } catch (Exception e) {
-            // Aquí es donde se usa el resolver inyectado manualmente
+            // Delega el error al manejador global de excepciones (por ejemplo, para devolver 401)
             resolver.resolveException(request, response, null, e);
         }
     }
