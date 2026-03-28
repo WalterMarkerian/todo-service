@@ -8,6 +8,11 @@ server:
     remoteip:
       remote-ip-header: x-forwarded-for
       protocol-header: x-forwarded-proto
+# NUEVA SECCIÓN DE LOGGING
+logging:
+  level:
+    org.springframework.security: DEBUG  # <--- Esto te dirá por qué da 403
+    org.springframework.web: DEBUG       # <--- Esto te mostrará la ruta real que llega
 
 spring:
   jpa:
