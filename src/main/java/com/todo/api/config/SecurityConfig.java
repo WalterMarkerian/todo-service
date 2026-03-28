@@ -52,6 +52,7 @@ public class SecurityConfig {
 
         // Configuramos para que acepte tu IP de servidor y localhost
         config.setAllowedOrigins(List.of(
+                "https://makeserver.tailc624bd.ts.net", // URL de producción
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
                 "http://localhost:3000",
