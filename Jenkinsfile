@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Nombre de la imagen y contenedor
-        DOCKER_IMAGE = "todo-api-local"
+        DOCKER_IMAGE = "todo-backend"
         CONTAINER_NAME = "todo-backend"
 
         // Red de Docker donde corre tu Postgres
@@ -35,11 +35,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Detenemos contenedores previos para evitar conflictos de puerto
-                sh "docker stop todo-api-app || true && docker rm todo-api-app || true"
+                sh "docker stop todo-backend || true && docker rm todo-backend || true"
 
                 sh """
                     docker run -d \
-                    --name todo-api-app \
+                    --name todo-backend \
                     -p 8090:8090 \
                     --network todo-network \
                     -e SPRING_PROFILES_ACTIVE=prod \
