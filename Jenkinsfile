@@ -2,49 +2,48 @@ pipeline {
     agent any
 
     environment {
-        // Nombre de la imagen y contenedor
-        DOCKER_IMAGE = "todo-backend"
-        CONTAINER_NAME = "todo-backend"
-
-        // Red de Docker donde corre tu Postgres
+        DOCKER_IMAGE = "todo-backend-prod"
         DOCKER_NETWORK = "todo-network"
 
-        // Extraemos las credenciales guardadas en Jenkins
-        // Esto inyecta automáticamente las variables al entorno del Pipeline
-        DB_USER = credentials('DB_USER')
-        DB_PASS = credentials('DB_PASS')
+        // Extraemos las credenciales guardadas en Jenkins (ID: 'DB_USER_PROD' y 'DB_PASS_PROD')
+        DB_USER = credentials('DB_USER_PROD')
+        DB_PASS = credentials('DB_PASS_PROD')
 
-        // La URL apunta al nombre del servicio/contenedor de Postgres en la red
-        DB_URL = "jdbc:postgresql://postgres-db:5432/tododb"
+        // Apuntamos al contenedor 'postgres-prod' que creamos en el paso 1
+        DB_URL = "jdbc:postgresql://postgres-prod:5432/todo_prod"
     }
 
     stages {
-        stage('Compile') {
+        stage('Compile & Test') {
             steps {
-                // chmod +x mvnw  <-- Asegurate de que el wrapper sea ejecutable en Git
-                sh './mvnw clean package -DskipTests'
+                // Aseguramos que el wrapper sea ejecutable
+                sh "chmod +x mvnw"
+                sh "./mvnw clean package -DskipTests"
             }
         }
 
-        stage('Build Image') {
+        stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:latest ."
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Production') {
             steps {
-                // Detenemos contenedores previos para evitar conflictos de puerto
-                sh "docker stop todo-backend || true && docker rm todo-backend || true"
+                // Limpieza de contenedores anteriores
+                sh "docker stop todo-backend-prod || true && docker rm todo-backend-prod || true"
 
+                // Inyección de variables de entorno de producción
                 sh """
                     docker run -d \
-                    --name todo-backend \
+                    --name todo-backend-prod \
+                    --network ${DOCKER_NETWORK} \
+                    --restart unless-stopped \
                     -p 8090:8090 \
-                    --network todo-network \
                     -e SPRING_PROFILES_ACTIVE=prod \
-                    -e DB_USER=user_admin \
-                    -e DB_PASS=password_secure \
+                    -e SPRING_DATASOURCE_URL=${DB_URL} \
+                    -e SPRING_DATASOURCE_USERNAME=${DB_USER} \
+                    -e SPRING_DATASOURCE_PASSWORD=${DB_PASS} \
                     ${DOCKER_IMAGE}:latest
                 """
             }
@@ -52,11 +51,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo "API desplegada correctamente en puerto 8090"
-        }
-        failure {
-            echo "Falla en el despliegue. Revisar consola de Jenkins."
-        }
+        success { echo "🚀 Backend de Producción desplegado en puerto 8090" }
+        always { sh "docker image prune -f" }
     }
 }

@@ -1,6 +1,3 @@
-# ==========================================
-# CONFIGURACIÓN COMÚN
-# ==========================================
 server:
   port: 8090
   forward-headers-strategy: none
@@ -8,62 +5,34 @@ server:
     remoteip:
       remote-ip-header: x-forwarded-for
       protocol-header: x-forwarded-proto
-# NUEVA SECCIÓN DE LOGGING
+
 logging:
   level:
-    org.springframework.security: DEBUG  # <--- Esto te dirá por qué da 403
-    org.springframework.web: DEBUG       # <--- Esto te mostrará la ruta real que llega
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
 
 spring:
+  datasource:
+    # IMPORTANTE: El parámetro va aquí pegado a la variable
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:todo_list}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: true
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:false}
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
-  # ELIMINADO: spring.security.oauth2 (Usamos JwtService manual)
-
-# Configuración específica para SpringDoc (Swagger)
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-    operations-sorter: alpha
-    tags-sorter: alpha
-  writer-with-default-pretty-printer: true
 
 jackson:
   serialization:
     write-dates-as-timestamps: false
-
----
-# ==========================================
-# PERFIL: DEV (Windows -> Ubuntu)
-# ==========================================
-spring:
-  config:
-    activate:
-      on-profile: dev
-  datasource:
-    url: jdbc:postgresql://192.168.1.23:5432/tododb
-    username: user_admin
-    password: password_secure
-    driver-class-name: org.postgresql.Driver
-
----
-# ==========================================
-# PERFIL: PROD (Dentro de Docker en Ubuntu)
-# ==========================================
-spring:
-  config:
-    activate:
-      on-profile: prod
-  datasource:
-    url: jdbc:postgresql://postgres-db:5432/tododb
-    username: ${DB_USER}
-    password: ${DB_PASS}
-    driver-class-name: org.postgresql.Driver
