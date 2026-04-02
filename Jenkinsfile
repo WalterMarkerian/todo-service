@@ -24,7 +24,7 @@ pipeline {
             }
         }
 
-    ## stage('Build Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
                     // Construimos con el tag del número de build y el tag 'latest'
@@ -73,7 +73,6 @@ pipeline {
     post {
         success {
             echo "🚀 Despliegue exitoso. App corriendo en contenedor: ${CONTAINER_NAME}"
-            echo "🔗 Acceso vía Nginx: http://makeserver.tailc624bd.ts.net/api/"
         }
         failure {
             echo "❌ El despliegue falló. Revisar logs de Jenkins y 'docker logs ${CONTAINER_NAME}'"
