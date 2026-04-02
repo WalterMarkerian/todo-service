@@ -7,7 +7,7 @@ pipeline {
 
         // URL específica para la API
         VIRTUAL_HOST = "makeserver.tailc624bd.ts.net"
-        VIRTUAL_PORT = 8090
+        VIRTUAL_PATH = "/api/"
 
         // Credenciales desde el Store de Jenkins
         DB_USER = credentials('DB_USER_PROD')
