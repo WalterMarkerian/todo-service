@@ -3,20 +3,22 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = "todo-backend-prod"
-        DOCKER_NETWORK = "todo-network"
+        DOCKER_NETWORK = "web_network"
 
-        // Extraemos las credenciales guardadas en Jenkins (ID: 'DB_USER_PROD' y 'DB_PASS_PROD')
+        // URL específica para la API
+        VIRTUAL_HOST = "todo-api.makeserver.tailc624bd.ts.net"
+
+        // Credenciales desde el Store de Jenkins
         DB_USER = credentials('DB_USER_PROD')
         DB_PASS = credentials('DB_PASS_PROD')
 
-        // Apuntamos al contenedor 'postgres-central' que creamos en el paso 1
-        DB_URL = "jdbc:postgresql://postgres-central:5432/todo_prod"
+        // Conexión al contenedor 'postgres-prod'
+        DB_URL = "jdbc:postgresql://postgres-prod:5432/todo_prod"
     }
 
     stages {
         stage('Compile & Test') {
             steps {
-                // Aseguramos que el wrapper sea ejecutable
                 sh "chmod +x mvnw"
                 sh "./mvnw clean package -DskipTests"
             }
@@ -24,22 +26,23 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+                sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
             }
         }
 
         stage('Deploy to Production') {
             steps {
-                // Limpieza de contenedores anteriores
-                sh "docker stop todo-backend-prod || true && docker rm todo-backend-prod || true"
+                sh "docker stop todo-backend-prod || true"
+                sh "docker rm todo-backend-prod || true"
 
-                // Inyección de variables de entorno de producción
                 sh """
                     docker run -d \
                     --name todo-backend-prod \
                     --network ${DOCKER_NETWORK} \
                     --restart unless-stopped \
-                    -p 8090:8090 \
+                    -e VIRTUAL_HOST=${VIRTUAL_HOST} \
+                    -e VIRTUAL_PORT=8090 \
                     -e SPRING_PROFILES_ACTIVE=prod \
                     -e SPRING_DATASOURCE_URL=${DB_URL} \
                     -e SPRING_DATASOURCE_USERNAME=${DB_USER} \
@@ -51,7 +54,8 @@ pipeline {
     }
 
     post {
-        success { echo "🚀 Backend de Producción desplegado en puerto 8090" }
+        success { echo "🚀 Backend desplegado en https://${VIRTUAL_HOST}" }
+        failure { echo "❌ Fallo en el despliegue del Backend." }
         always { sh "docker image prune -f" }
     }
 }
