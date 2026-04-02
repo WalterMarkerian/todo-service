@@ -30,8 +30,8 @@ pipeline {
             steps {
                 // Usamos los IDs de credenciales que tienes creados en Jenkins
                 withCredentials([
-                    string(credentialsId: 'TODO_PROD_DB_USER', variable: 'ENV_DB_USER'),
-                    string(credentialsId: 'TODO_PROD_DB_PASS', variable: 'ENV_DB_PASS')
+                    string(credentialsId: 'POSTGRES_USER', variable: 'ENV_DB_USER'),
+                    string(credentialsId: 'POSTGRES_PASSWORD', variable: 'ENV_DB_PASS')
                 ]) {
                     sh "docker stop todo-backend-prod || true"
                     sh "docker rm todo-backend-prod || true"
