@@ -8,7 +8,7 @@ pipeline {
         // Variables específicas para el contenedor de Producción
         PROD_DB_HOST = "postgres-prod"
         PROD_DB_PORT = "5432"
-        PROD_DB_NAME = 'TODO_PROD_DB_NAME'
+        PROD_DB_NAME = "todo_prod"
     }
 
     stages {
