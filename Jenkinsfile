@@ -9,8 +9,8 @@ pipeline {
         DB_USER = credentials('DB_USER_PROD')
         DB_PASS = credentials('DB_PASS_PROD')
 
-        // Apuntamos al contenedor 'postgres-prod' que creamos en el paso 1
-        DB_URL = "jdbc:postgresql://postgres-prod:5432/todo_prod"
+        // Apuntamos al contenedor 'postgres-central' que creamos en el paso 1
+        DB_URL = "jdbc:postgresql://postgres-central:5432/todo_prod"
     }
 
     stages {
