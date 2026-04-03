@@ -35,9 +35,9 @@ pipeline {
             steps {
                 // Usando los IDs exactos de tus credenciales en Jenkins
                 withCredentials([
-                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'POSTGRES_TODO_USER'),
-                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'POSTGRES_TODO_PASSWORD'),
-                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_TODO_DB')
+                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'POSTGRES_USER'),
+                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'POSTGRES_PASSWORD'),
+                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_DB')
                 ]) {
                     script {
                         // Lógica Robusta: Matamos cualquier contenedor que use el puerto 8090
@@ -63,9 +63,9 @@ pipeline {
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${PROD_DB_HOST} \
                             -e DB_PORT=${PROD_DB_PORT} \
-                            -e DB_NAME='${POSTGRES_TODO_DB}' \
-                            -e DB_USER='${POSTGRES_TODO_USER}' \
-                            -e DB_PASSWORD='${POSTGRES_TODO_PASSWORD}' \
+                            -e DB_NAME='${POSTGRES_DB}' \
+                            -e DB_USER='${POSTGRES_USER}' \
+                            -e DB_PASSWORD='${POSTGRES_PASSWORD}' \
                             -e JPA_DDL_AUTO=validate \
                             ${DOCKER_IMAGE}:latest
                         """
