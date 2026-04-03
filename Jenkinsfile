@@ -66,7 +66,7 @@ pipeline {
                             -e DB_PORT=${PROD_DB_PORT} \
                             -e DB_NAME='${POSTGRES_DB}' \
                             -e DB_USER='${POSTGRES_USER}' \
-                            -e DB_PASSWORD='${POSTGRES_PASSWORD}' \
+                            -e DB_PASSWORD="${POSTGRES_PASSWORD}" \
                             -e JPA_DDL_AUTO=validate \
                             ${DOCKER_IMAGE}:latest
                         """
