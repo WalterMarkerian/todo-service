@@ -37,24 +37,15 @@ pipeline {
                     string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_DB')
                 ]) {
                     script {
-                        // 1. Aseguramos que la red exista (si no, falla el docker run)
+                        // Aseguramos conectividad de red entre contenedores
                         sh "docker network create ${DOCKER_NETWORK} || true"
-
-                        // 2. Conectamos la DB a la red si no lo está
-                        // Esto garantiza que 'postgres-prod' sea visible para 'todo-app'
                         sh "docker network connect ${DOCKER_NETWORK} ${PROD_DB_HOST} || true"
 
-                        // 3. Limpieza: Escapamos el $ de la variable de Shell con \
-                        sh """
-                            TARGET_ID=\$(docker ps -q --filter "publish=8090")
-                            if [ ! -z "\$TARGET_ID" ]; then
-                                echo "Limpiando puerto 8090 ocupado por: \$TARGET_ID"
-                                docker stop \$TARGET_ID && docker rm \$TARGET_ID
-                            fi
-                            docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
-                        """
+                        // Limpieza: Eliminamos el contenedor anterior si existe
+                        sh "docker rm -f ${CONTAINER_NAME} 2>/dev/null || true"
 
-                        // 4. Despliegue
+                        // Despliegue con la nueva clave alfanumérica
+                        // Al no tener caracteres especiales, las comillas dobles bastan
                         sh """
                             docker run -d \
                             --name ${CONTAINER_NAME} \
@@ -64,8 +55,8 @@ pipeline {
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${PROD_DB_HOST} \
                             -e DB_PORT=${PROD_DB_PORT} \
-                            -e DB_NAME='${POSTGRES_DB}' \
-                            -e DB_USER='${POSTGRES_USER}' \
+                            -e DB_NAME="${POSTGRES_DB}" \
+                            -e DB_USER="${POSTGRES_USER}" \
                             -e DB_PASSWORD="${POSTGRES_PASSWORD}" \
                             -e JPA_DDL_AUTO=validate \
                             ${DOCKER_IMAGE}:latest
@@ -78,11 +69,11 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Backend desplegado con éxito en el puerto 8090."
+            echo "🚀 Despliegue finalizado. Probando conexión..."
         }
         failure {
-            echo "❌ Error en el despliegue. Logs:"
-            sh "docker logs ${CONTAINER_NAME} --tail 20 || true"
+            echo "❌ Error detectado. Logs de Spring Boot:"
+            sh "docker logs ${CONTAINER_NAME} --tail 50 || true"
         }
         always {
             sh "docker image prune -f"
