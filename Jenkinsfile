@@ -2,12 +2,18 @@ pipeline {
     agent any
 
     environment {
+        // Configuración de Imagen y Contenedor
         DOCKER_IMAGE = "todo-service"
         CONTAINER_NAME = "todo-app"
         DOCKER_NETWORK = "web_network"
 
-        PROD_DB_HOST = "postgres-prod"
-        PROD_DB_PORT = "5432"
+        // CREDENCIALES DIRECTAS (Hardcoded)
+        // Deben coincidir exactamente con las que usaste para levantar postgres-prod
+        DB_HOST = "postgres-prod"
+        DB_PORT = "5432"
+        DB_NAME = "todo_prod"
+        DB_USER = "prod_user"
+        DB_PASS = "s4yBZWMSW4oj33fzRbBB"
     }
 
     stages {
@@ -31,37 +37,30 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'POSTGRES_USER'),
-                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'POSTGRES_PASSWORD'),
-                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_DB')
-                ]) {
-                    script {
-                        // Aseguramos conectividad de red entre contenedores
-                        sh "docker network create ${DOCKER_NETWORK} || true"
-                        sh "docker network connect ${DOCKER_NETWORK} ${PROD_DB_HOST} || true"
+                script {
+                    // Aseguramos que la red exista y el contenedor de DB esté conectado
+                    sh "docker network create ${DOCKER_NETWORK} || true"
+                    sh "docker network connect ${DOCKER_NETWORK} ${DB_HOST} || true"
 
-                        // Limpieza: Eliminamos el contenedor anterior si existe
-                        sh "docker rm -f ${CONTAINER_NAME} 2>/dev/null || true"
+                    // Eliminamos el contenedor viejo si existe
+                    sh "docker rm -f ${CONTAINER_NAME} 2>/dev/null || true"
 
-                        // Despliegue con la nueva clave alfanumérica
-                        // Al no tener caracteres especiales, las comillas dobles bastan
-                        sh """
-                            docker run -d \
-                            --name ${CONTAINER_NAME} \
-                            --network ${DOCKER_NETWORK} \
-                            --restart unless-stopped \
-                            -p 8090:8090 \
-                            -e SPRING_PROFILES_ACTIVE=prod \
-                            -e DB_HOST=${PROD_DB_HOST} \
-                            -e DB_PORT=${PROD_DB_PORT} \
-                            -e DB_NAME=${POSTGRES_DB} \
-                            -e DB_USER=${POSTGRES_USER} \
-                            -e DB_PASSWORD=${POSTGRES_PASSWORD} \
-                            -e JPA_DDL_AUTO=validate \
-                            ${DOCKER_IMAGE}:latest
-                        """
-                    }
+                    // Despliegue usando las variables del bloque environment
+                    sh """
+                        docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        --network ${DOCKER_NETWORK} \
+                        --restart unless-stopped \
+                        -p 8090:8090 \
+                        -e SPRING_PROFILES_ACTIVE=prod \
+                        -e DB_HOST=${DB_HOST} \
+                        -e DB_PORT=${DB_PORT} \
+                        -e DB_NAME=${DB_NAME} \
+                        -e DB_USER=${DB_USER} \
+                        -e DB_PASSWORD=${DB_PASS} \
+                        -e JPA_DDL_AUTO=validate \
+                        ${DOCKER_IMAGE}:latest
+                    """
                 }
             }
         }
@@ -69,10 +68,12 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Despliegue finalizado. Probando conexión..."
+            echo "🚀 Despliegue finalizado con éxito."
+            // Pequeña verificación de logs tras el arranque
+            sh "sleep 5 && docker logs ${CONTAINER_NAME} --tail 20"
         }
         failure {
-            echo "❌ Error detectado. Logs de Spring Boot:"
+            echo "❌ Falló el despliegue. Logs del contenedor:"
             sh "docker logs ${CONTAINER_NAME} --tail 50 || true"
         }
         always {
