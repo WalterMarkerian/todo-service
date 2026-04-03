@@ -8,7 +8,7 @@ pipeline {
         DOCKER_NETWORK = "web_network"
 
         // Configuración de infraestructura
-        PROD_DB_HOST = "postgres-prod"
+        PROD_DB_HOST = "makeserver.tailc624bd.ts.net"
         PROD_DB_PORT = "5432"
     }
 
