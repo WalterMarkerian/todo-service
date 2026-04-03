@@ -2,13 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Identificadores de imagen y contenedor
         DOCKER_IMAGE = "todo-service"
         CONTAINER_NAME = "todo-app"
         DOCKER_NETWORK = "web_network"
 
-        // Configuración de infraestructura
-        PROD_DB_HOST = "makeserver.tailc624bd.ts.net"
+        PROD_DB_HOST = "postgres-prod"
         PROD_DB_PORT = "5432"
     }
 
@@ -33,27 +31,30 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                // Usando los IDs exactos de tus credenciales en Jenkins
                 withCredentials([
                     string(credentialsId: 'POSTGRES_TODO_USER', variable: 'POSTGRES_USER'),
                     string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'POSTGRES_PASSWORD'),
                     string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_DB')
                 ]) {
                     script {
-                        // Lógica Robusta: Matamos cualquier contenedor que use el puerto 8090
-                        sh """
-                            EXISTING_CONTAINER=\$(docker ps -q --filter "publish=8090")
-                            if [ ! -z "\$EXISTING_CONTAINER" ]; then
-                                echo "Limpiando puerto 8090 ocupado por: \$EXISTING_CONTAINER"
-                                docker stop \$EXISTING_CONTAINER && docker rm \$EXISTING_CONTAINER
-                            fi
+                        // 1. Aseguramos que la red exista (si no, falla el docker run)
+                        sh "docker network create ${DOCKER_NETWORK} || true"
 
-                            # También removemos por nombre por si quedó un intento fallido anterior
-                            docker rm -f ${CONTAINER_NAME} || true
+                        // 2. Conectamos la DB a la red si no lo está
+                        // Esto garantiza que 'postgres-prod' sea visible para 'todo-app'
+                        sh "docker network connect ${DOCKER_NETWORK} ${PROD_DB_HOST} || true"
+
+                        // 3. Limpieza: Escapamos el $ de la variable de Shell con \
+                        sh """
+                            TARGET_ID=\$(docker ps -q --filter "publish=8090")
+                            if [ ! -z "\$TARGET_ID" ]; then
+                                echo "Limpiando puerto 8090 ocupado por: \$TARGET_ID"
+                                docker stop \$TARGET_ID && docker rm \$TARGET_ID
+                            fi
+                            docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
                         """
 
-                        // Despliegue del contenedor
-                        // El uso de '${DB_PASS}' protege los caracteres especiales (#, !)
+                        // 4. Despliegue
                         sh """
                             docker run -d \
                             --name ${CONTAINER_NAME} \
@@ -78,13 +79,12 @@ pipeline {
     post {
         success {
             echo "🚀 Backend desplegado con éxito en el puerto 8090."
-            echo "El contenedor '${CONTAINER_NAME}' ya es visible para Nginx."
         }
         failure {
-            echo "❌ Error en el despliegue. Revisar logs con 'docker logs ${CONTAINER_NAME}'"
+            echo "❌ Error en el despliegue. Logs:"
+            sh "docker logs ${CONTAINER_NAME} --tail 20 || true"
         }
         always {
-            // Mantenemos el servidor limpio de imágenes intermedias
             sh "docker image prune -f"
         }
     }
