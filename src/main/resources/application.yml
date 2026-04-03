@@ -1,5 +1,7 @@
 server:
   port: 8090
+  servlet:
+    context-path: /api/v1
 
 spring:
   datasource:
@@ -24,7 +26,7 @@ spring:
 # Opcional: Para ver errores de conexión más claros en la consola
 logging:
   level:
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: INFO
     com.zaxxer.hikari: INFO
 
 springdoc:

@@ -55,7 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // 2. Omitir validación en rutas de auth con mayor flexibilidad
         // Buscamos "/auth/" en cualquier parte del path para evitar errores de proxy
-        if (path.contains("/api/v1/auth/") || path.contains("/auth/login") || path.contains("/auth/register")) {
+        if (path.contains("/v1/auth/") || path.contains("/auth/login") || path.contains("/auth/register")) {
             filterChain.doFilter(request, response);
             return;
         }
