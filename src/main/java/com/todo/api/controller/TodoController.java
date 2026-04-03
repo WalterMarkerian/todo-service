@@ -19,7 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/todos")
+@RequestMapping("/v1/todos")
 @RequiredArgsConstructor
 @Tag(name = "Tareas", description = "Operaciones para la gestión de la lista de tareas")
 public class TodoController {
