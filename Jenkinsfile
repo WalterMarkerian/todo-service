@@ -10,7 +10,6 @@ pipeline {
         // Configuración de infraestructura
         PROD_DB_HOST = "postgres-prod"
         PROD_DB_PORT = "5432"
-        PROD_DB_NAME = "todo_prod"
     }
 
     stages {
@@ -36,9 +35,9 @@ pipeline {
             steps {
                 // Usando los IDs exactos de tus credenciales en Jenkins
                 withCredentials([
-                    string(credentialsId: 'TODO_PROD_DB_USER', variable: 'DB_USER'),
-                    string(credentialsId: 'TODO_PROD_DB_PASS', variable: 'DB_PASS'),
-                    string(credentialsId: 'TODO_PROD_DB_NAME', variable: 'DB_NAME_VAL')
+                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'DB_USER'),
+                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'DB_PASS'),
+                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'DB_NAME_VAL')
                 ]) {
                     script {
                         // Lógica Robusta: Matamos cualquier contenedor que use el puerto 8090
@@ -64,9 +63,9 @@ pipeline {
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${PROD_DB_HOST} \
                             -e DB_PORT=${PROD_DB_PORT} \
-                            -e DB_NAME=${PROD_DB_NAME} \
-                            -e DB_USER=${DB_USER} \
-                            -e DB_PASSWORD='${DB_PASS}' \
+                            -e DB_NAME=${POSTGRES_TODO_DB} \
+                            -e DB_USER=${POSTGRES_TODO_USER} \
+                            -e DB_PASSWORD='${POSTGRES_TODO_PASSWORD}' \
                             -e JPA_DDL_AUTO=validate \
                             ${DOCKER_IMAGE}:latest
                         """
