@@ -63,9 +63,9 @@ pipeline {
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${PROD_DB_HOST} \
                             -e DB_PORT=${PROD_DB_PORT} \
-                            -e DB_NAME='${DB_NAME_VAL}' \
-                            -e DB_USER='${DB_USER_VAL}' \
-                            -e DB_PASSWORD='${DB_PASS_VAL}' \
+                            -e DB_NAME='${POSTGRES_TODO_DB}' \
+                            -e DB_USER='${POSTGRES_TODO_USER}' \
+                            -e DB_PASSWORD='${POSTGRES_TODO_PASSWORD}' \
                             -e JPA_DDL_AUTO=validate \
                             ${DOCKER_IMAGE}:latest
                         """
