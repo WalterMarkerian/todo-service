@@ -31,9 +31,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Endpoints de Auth
                         .requestMatchers("/api/v1/auth/**", "/v1/auth/**").permitAll()
-                        // 2. Swagger
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        // 3. El resto requiere JWT
+                        // 2. Swagger y OpenAPI (El pack completo para evitar el 403)
+                                .requestMatchers(
+                                        "/v3/api-docs/**",
+                                        "/v3/api-docs.yaml",
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/swagger-resources/**",
+                                        "/webjars/**"
+                                ).permitAll()
+                                // 3. El resto requiere JWT
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
