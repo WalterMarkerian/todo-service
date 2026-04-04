@@ -56,8 +56,8 @@ public class SecurityConfig {
                 "https://antone-overgreasy-overclosely.ngrok-free.dev", // URL de ngrok
                 "https://todo.makeserver.tailc624bd.ts.net",
                 "https://makeserver.tailc624bd.ts.net", // URL de producción
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
+                "http://localhost:4173", // El puerto de 'npm run preview'
+                "http://localhost:5173", // El puerto de 'npm run dev'                "http://127.0.0.1:5173",
                 "http://localhost:3000",
                 "http://192.168.1.23:3000"
         ));
