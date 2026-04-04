@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    # Aquí es donde ocurre la magia: concatenamos tus variables
+    # Agregamos las barras inclinadas // que faltaban en el protocolo
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASS}
@@ -14,14 +14,13 @@ spring:
 
   jpa:
     hibernate:
+      # 'update' es ideal para desarrollo, en producción se usa 'validate'
       ddl-auto: ${DB_DDL:update}
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
-# Opcional: Para ver errores de conexión más claros en la consola
 logging:
   level:
     org.hibernate.SQL: INFO

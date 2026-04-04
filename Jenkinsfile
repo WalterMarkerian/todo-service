@@ -2,17 +2,16 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "todo-service"
-        CONTAINER_NAME = "todo-app"
+        DOCKER_IMAGE = "todo-backend"
+        CONTAINER_NAME = "todo-backend"
         DOCKER_NETWORK = "web_network"
-
-        // Host y puerto (coinciden con tu contenedor postgres-prod)
+        // Nombre del contenedor de DB que ya levantamos en la infraestructura
         DB_HOST = "postgres-prod"
         DB_PORT = "5432"
     }
 
     stages {
-        stage('Compile & Test') {
+        stage('Compile & Package') {
             steps {
                 script {
                     sh "chmod +x mvnw"
@@ -24,6 +23,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Construimos la imagen con el tag del build y el tag latest
                     sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
                     sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
                 }
@@ -32,36 +32,30 @@ pipeline {
 
         stage('Deploy to Production') {
             steps {
-                // 'credentialsId' es el ID en el panel de Jenkins
-                // 'variable' es como la vas a llamar dentro de este bloque
+                // Inyectamos las credenciales guardadas en Jenkins
                 withCredentials([
                     string(credentialsId: 'POSTGRES_TODO_USER', variable: 'J_USER'),
                     string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'J_PASS'),
                     string(credentialsId: 'POSTGRES_TODO_DB', variable: 'J_DB')
                 ]) {
                     script {
-                        // Aseguramos que la red exista y el host esté vinculado
-                        sh "docker network create ${DOCKER_NETWORK} || true"
-                        sh "docker network connect ${DOCKER_NETWORK} ${DB_HOST} || true"
-
-                        // Limpieza del contenedor viejo
+                        // 1. Limpieza del contenedor anterior si existe
                         sh "docker rm -f ${CONTAINER_NAME} 2>/dev/null || true"
 
-                        // MAPEO: El nombre a la izquierda del '=' es el que definiste en el .yml
-                        // El nombre a la derecha es la variable que viene de withCredentials
+                        // 2. Ejecución del nuevo contenedor
+                        // Nota: Usamos DB_DDL=validate para no romper la DB de prod accidentalmente
                         sh """
                             docker run -d \
                             --name ${CONTAINER_NAME} \
                             --network ${DOCKER_NETWORK} \
                             --restart unless-stopped \
-                            -p 8090:8090 \
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${DB_HOST} \
                             -e DB_PORT=${DB_PORT} \
                             -e DB_NAME=${J_DB} \
                             -e DB_USER=${J_USER} \
                             -e DB_PASS=${J_PASS} \
-                            -e DB_DDL=update \
+                            -e DB_DDL=validate \
                             ${DOCKER_IMAGE}:latest
                         """
                     }
@@ -72,14 +66,12 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Despliegue exitoso. Revisando logs de conexión..."
-            sh "sleep 10 && docker logs ${CONTAINER_NAME} --tail 30"
-        }
-        failure {
-            echo "❌ Error en el Pipeline. Verificá las credenciales en Jenkins."
-            sh "docker logs ${CONTAINER_NAME} --tail 50 || true"
+            echo "🚀 Despliegue exitoso en ${CONTAINER_NAME}"
         }
         always {
+            // BORRAR CÓDIGO FUENTE: Mantenemos el servidor limpio
+            deleteDir()
+            // Limpieza de imágenes huérfanas para ahorrar espacio
             sh "docker image prune -f"
         }
     }
