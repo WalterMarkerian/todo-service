@@ -31,16 +31,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos (Auth y Swagger)
-                        .requestMatchers("/auth/**").permitAll()
+                        // CORRECCIÓN: Agregamos el prefijo /api/v1/ para que coincida con tus controladores
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        // Endpoints de documentación (también públicos)
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Todo lo demás requiere token (Cambiamos permitAll por authenticated)
+                        // Todo lo demás requiere token
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authProvider)
-                // CLAVE: El filtro de JWT debe ir antes que el de usuario/password
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
