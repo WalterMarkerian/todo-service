@@ -53,6 +53,7 @@ public class SecurityConfig {
 
         // Configuramos para que acepte tu IP de servidor y localhost
         config.setAllowedOrigins(List.of(
+                "https://antone-overgreasy-overclosely.ngrok-free.dev", // URL de ngrok
                 "https://todo.makeserver.tailc624bd.ts.net",
                 "https://makeserver.tailc624bd.ts.net", // URL de producción
                 "http://localhost:5173",
