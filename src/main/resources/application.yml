@@ -1,9 +1,10 @@
 server:
   port: 8090
+  # ESTA LÍNEA ES LA CLAVE PARA EL PROXY
+  forward-headers-strategy: framework
 
 spring:
   datasource:
-    # Agregamos las barras inclinadas // que faltaban en el protocolo
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASS}
@@ -14,7 +15,6 @@ spring:
 
   jpa:
     hibernate:
-      # 'update' es ideal para desarrollo, en producción se usa 'validate'
       ddl-auto: ${DB_DDL:update}
     show-sql: false
     properties:
@@ -30,4 +30,8 @@ springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
+    # Esto habilita la interfaz en /swagger-ui/index.html
     path: /swagger-ui.html
+    enabled: true
+  # Ayuda a que Swagger use las rutas relativas del proxy
+  writer-with-default-pretty-printer: true
