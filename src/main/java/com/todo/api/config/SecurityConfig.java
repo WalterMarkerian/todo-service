@@ -31,13 +31,13 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // CORRECCIÓN: Agregamos el prefijo /api/v1/ para que coincida con tus controladores
-                        .requestMatchers("/**").permitAll()
+                        // 1. Endpoints de Auth: Permitimos cualquier variante de prefijo para evitar rebotes de Proxy
+                        .requestMatchers("/api/v1/auth/**", "/v1/auth/**", "/auth/**").permitAll()
 
-                        // Endpoints de documentación (también públicos)
+                        // 2. Documentación: Pública para desarrollo y testing
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-                        // Todo lo demás requiere token
+                        // 3. El resto: ESTRICTAMENTE autenticado con JWT
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
