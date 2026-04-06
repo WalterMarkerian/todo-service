@@ -34,9 +34,9 @@ pipeline {
             steps {
                 // Inyectamos las credenciales guardadas en Jenkins
                 withCredentials([
-                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'J_USER'),
-                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'J_PASS'),
-                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'J_DB')
+                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'POSTGRES_TODO_USER'),
+                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'POSTGRES_TODO_PASSWORD'),
+                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_TODO_DB')
                 ]) {
                     script {
                         // 1. Limpieza del contenedor anterior si existe
@@ -52,9 +52,9 @@ pipeline {
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${DB_HOST} \
                             -e DB_PORT=${DB_PORT} \
-                            -e DB_NAME=${J_DB} \
-                            -e DB_USER=${J_USER} \
-                            -e DB_PASS=${J_PASS} \
+                            -e DB_NAME=${POSTGRES_TODO_DB} \
+                            -e DB_USER=${POSTGRES_TODO_USER} \
+                            -e DB_PASS=${POSTGRES_TODO_PASSWORD} \
                             -e DB_DDL=validate \
                             ${DOCKER_IMAGE}:latest
                         """
