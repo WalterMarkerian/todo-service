@@ -59,7 +59,8 @@ public class SecurityConfig {
                 "http://makeserver.tailc624bd.ts.net",    // URL de Tailscale (HTTP)
                 "https://makeserver.tailc624bd.ts.net",   // URL de Tailscale (HTTPS)
                 "http://localhost:5173",
-                "http://localhost:4173"
+                "http://localhost:4173",
+                "https://antone-overgreasy-overclosely.ngrok-free.dev"
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
