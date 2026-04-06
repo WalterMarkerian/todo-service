@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "todo-backend"
-        CONTAINER_NAME = "todo-backend"
+        DOCKER_IMAGE = "todo-service"
+        CONTAINER_NAME = "todo-service"
         DOCKER_NETWORK = "web_network"
         // Nombre del contenedor de DB que ya levantamos en la infraestructura
         DB_HOST = "postgres-prod"
