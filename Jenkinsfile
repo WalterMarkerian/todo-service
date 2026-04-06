@@ -1,13 +1,20 @@
 pipeline {
     agent any
 
+    // Limitamos a los últimos 5 builds para no llenar el disco de logs y carpetas
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        disableConcurrentBuilds() // Evita que dos builds choquen al intentar usar el mismo contenedor
+    }
+
     environment {
-        DOCKER_IMAGE = "todo-service"
+        DOCKER_IMAGE   = "todo-service"
         CONTAINER_NAME = "todo-service"
         DOCKER_NETWORK = "web_network"
-        // Nombre del contenedor de DB que ya levantamos en la infraestructura
-        DB_HOST = "postgres-prod"
-        DB_PORT = "5432"
+        DB_HOST        = "postgres-prod"
+        DB_PORT        = "5432"
+        // Definimos el tag para poder referenciarlo fácilmente
+        IMAGE_TAG      = "${DOCKER_IMAGE}:${BUILD_NUMBER}"
     }
 
     stages {
@@ -15,6 +22,7 @@ pipeline {
             steps {
                 script {
                     sh "chmod +x mvnw"
+                    // Agregamos limpieza de cache de Maven para evitar conflictos
                     sh "./mvnw clean package -DskipTests"
                 }
             }
@@ -23,27 +31,25 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Construimos la imagen con el tag del build y el tag latest
-                    sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
-                    sh "docker tag ${DOCKER_IMAGE}:${BUILD_NUMBER} ${DOCKER_IMAGE}:latest"
+                    // Usamos --pull para asegurar que la imagen base (JRE 21) esté actualizada
+                    sh "docker build --pull -t ${IMAGE_TAG} ."
+                    sh "docker tag ${IMAGE_TAG} ${DOCKER_IMAGE}:latest"
                 }
             }
         }
 
         stage('Deploy to Production') {
             steps {
-                // Inyectamos las credenciales guardadas en Jenkins
                 withCredentials([
-                    string(credentialsId: 'POSTGRES_TODO_USER', variable: 'POSTGRES_TODO_USER'),
-                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'POSTGRES_TODO_PASSWORD'),
-                    string(credentialsId: 'POSTGRES_TODO_DB', variable: 'POSTGRES_TODO_DB')
+                    string(credentialsId: 'POSTGRES_TODO_USER',     variable: 'DB_USER_VAL'),
+                    string(credentialsId: 'POSTGRES_TODO_PASSWORD', variable: 'DB_PASS_VAL'),
+                    string(credentialsId: 'POSTGRES_TODO_DB',       variable: 'DB_NAME_VAL')
                 ]) {
                     script {
-                        // 1. Limpieza del contenedor anterior si existe
+                        // 1. Limpieza prolija
                         sh "docker rm -f ${CONTAINER_NAME} 2>/dev/null || true"
 
-                        // 2. Ejecución del nuevo contenedor
-                        // Nota: Usamos DB_DDL=validate para no romper la DB de prod accidentalmente
+                        // 2. Ejecución con variables inyectadas de forma segura
                         sh """
                             docker run -d \
                             --name ${CONTAINER_NAME} \
@@ -52,9 +58,9 @@ pipeline {
                             -e SPRING_PROFILES_ACTIVE=prod \
                             -e DB_HOST=${DB_HOST} \
                             -e DB_PORT=${DB_PORT} \
-                            -e DB_NAME=${POSTGRES_TODO_DB} \
-                            -e DB_USER=${POSTGRES_TODO_USER} \
-                            -e DB_PASS=${POSTGRES_TODO_PASSWORD} \
+                            -e DB_NAME=${DB_NAME_VAL} \
+                            -e DB_USER=${DB_USER_VAL} \
+                            -e DB_PASS=${DB_PASS_VAL} \
                             -e DB_DDL=validate \
                             ${DOCKER_IMAGE}:latest
                         """
@@ -66,13 +72,25 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Despliegue exitoso en ${CONTAINER_NAME}"
+            echo "🚀 Despliegue exitoso de ${DOCKER_IMAGE} build #${BUILD_NUMBER}"
+        }
+        failure {
+            echo "❌ Falló el despliegue. Revisar logs de Maven o Docker."
         }
         always {
-            // BORRAR CÓDIGO FUENTE: Mantenemos el servidor limpio
-            deleteDir()
-            // Limpieza de imágenes huérfanas para ahorrar espacio
-            sh "docker image prune -f"
+            script {
+                // Borramos el código fuente
+                deleteDir()
+
+                // --- LIMPIEZA PRO ---
+                // 1. Borramos la imagen específica de este build (la :BUILD_NUMBER)
+                // Esto evita que se acumulen las imágenes que listamos antes.
+                // La versión :latest queda viva porque está "In Use" por el contenedor.
+                sh "docker rmi ${IMAGE_TAG} || true"
+
+                // 2. Limpieza general de capas intermedias (dangling images)
+                sh "docker image prune -f"
+            }
         }
     }
 }
