@@ -28,7 +28,7 @@ logging:
 
 springdoc:
   api-docs:
-    path: /api/v1/v3/api-docs
+    path: /api/v1/todo/v3/api-docs
   swagger-ui:
     # Esto habilita la interfaz en /swagger-ui/index.html
     path: /todo/swagger
