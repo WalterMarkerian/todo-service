@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,6 +25,7 @@ public class SwaggerConfig {
                         .title("Todo API")
                         .version("1.0")
                         .description("Documentación de la API de Tareas con Seguridad JWT"))
-                .addSecurityItem(new SecurityRequirement().addList("bearer-key"));
+                .addSecurityItem(new SecurityRequirement().addList("bearer-key"))
+                .addServersItem(new Server().url("https://antone-overgreasy-overclosely.ngrok-free.dev").description("Servidor Producción"));
     }
 }
