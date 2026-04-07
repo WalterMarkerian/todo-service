@@ -1,7 +1,7 @@
 server:
   port: 8090
   # ESTA LÍNEA ES LA CLAVE PARA EL PROXY
-  forward-headers-strategy: framework
+  forward-headers-strategy: native
 
 spring:
   datasource:
@@ -27,6 +27,8 @@ logging:
     com.zaxxer.hikari: INFO
 
 springdoc:
+  # Esto fuerza a Swagger a usar la URL del servidor que está recibiendo la petición
+  show-login-endpoint: true
   api-docs:
     # Este es el JSON que describe tu API. Lo hacemos único para TODO.
     path: /api/v1/todo-docs
