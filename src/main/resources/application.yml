@@ -28,10 +28,13 @@ logging:
 
 springdoc:
   api-docs:
-    path: /api/v1/todo/v3/api-docs
+    # Este es el JSON que describe tu API. Lo hacemos único para TODO.
+    path: /api/v1/todo-docs
   swagger-ui:
-    # Esto habilita la interfaz en /swagger-ui/index.html
-    path: /todo/swagger
+    # USAMOS ESTO: Es la ruta interna donde Spring servirá el HTML.
+    # Evitamos /todo/ acá para que no choque con los recursos estáticos.
+    path: /swagger-ui.html
+    # FORZAMOS a que Swagger lea TU JSON específico y no el de otra app.
+    url: /api/v1/todo-docs
     enabled: true
-  # Ayuda a que Swagger use las rutas relativas del proxy
   writer-with-default-pretty-printer: true
