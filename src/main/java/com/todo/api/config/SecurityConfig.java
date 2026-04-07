@@ -32,14 +32,7 @@ public class SecurityConfig {
                         // 1. Endpoints de Auth
                         .requestMatchers("/api/v1/auth/**", "/v1/auth/**").permitAll()
                         // 2. Swagger y OpenAPI (El pack completo para evitar el 403)
-                                .requestMatchers(
-                                        "/v3/api-docs/**",
-                                        "/v3/api-docs.yaml",
-                                        "/swagger-ui/**",
-                                        "/swagger-ui.html",
-                                        "/swagger-resources/**",
-                                        "/webjars/**"
-                                ).permitAll()
+                        .requestMatchers("/api/v1/todo/v3/api-docs/**", "/todo/swagger/**", "/webjars/**").permitAll()
                                 // 3. El resto requiere JWT
                         .anyRequest().authenticated()
                 )
