@@ -11,7 +11,7 @@ pipeline {
         DOCKER_IMAGE   = "todo-service"
         CONTAINER_NAME = "todo-service"
         DOCKER_NETWORK = "web_network"
-        DB_HOST        = "postgres-prod"
+        DB_HOST        = "todo-postgres-prod"
         DB_PORT        = "5432"
         // Definimos el tag para poder referenciarlo fácilmente
         IMAGE_TAG      = "${DOCKER_IMAGE}:${BUILD_NUMBER}"
